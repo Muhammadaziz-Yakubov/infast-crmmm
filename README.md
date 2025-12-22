@@ -193,3 +193,4 @@ Muammo yuzaga kelsa, issue oching yoki aloqaga chiqing.
 "# infastcrm" 
 "# infast-crm" 
 "# infastcrmm" 
+"# infastcrm-frontend" 
