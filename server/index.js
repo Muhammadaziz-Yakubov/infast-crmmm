@@ -29,7 +29,7 @@ app.use(cors({
 app.use(express.json());
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/infast-crm', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://infastaiuz_db_user:Shodiyona@infast-ai.kuaftll.mongodb.net/infastcrm?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

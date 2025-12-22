@@ -44,13 +44,31 @@ git push -u origin main
 - Start Command: `npm start`
 
 **Environment Variables:**
-```
-MONGODB_URI=mongodb+srv://infast-admin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/infast-crm?retryWrites=true&w=majority
-JWT_SECRET=your-very-secret-key-min-32-characters-change-this
-NODE_ENV=production
-PORT=5000
-FRONTEND_URL=https://your-frontend.railway.app
-```
+
+Render.com'da **Environment** bo'limiga o'ting va har birini alohida qo'shing:
+
+1. **MONGODB_URI** (Key) = `mongodb+srv://infast-admin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/infast-crm?retryWrites=true&w=majority`
+   - Bu yerda `YOUR_PASSWORD` o'rniga MongoDB Atlas'da yaratgan parolingizni yozing
+   - `cluster0.xxxxx` o'rniga sizning cluster nomingiz bo'ladi
+
+2. **JWT_SECRET** (Key) = `your-very-secret-key-min-32-characters-change-this`
+   - Bu yerda kuchli parol yozing (masalan: `InFast2024SecretKeyForJWTTokenGeneration123!`)
+   - Minimum 32 belgi bo'lishi kerak
+
+3. **NODE_ENV** (Key) = `production`
+
+4. **PORT** (Key) = `5000`
+
+5. **FRONTEND_URL** (Key) = `https://your-frontend.railway.app`
+   - Bu yerda Railway'dan olgan frontend URL'ni yozing
+   - Avval Railway'da deploy qiling, keyin URL ni oling va bu yerga yozing
+
+**Qanday qo'shish:**
+- Render.com dashboard'da service'ingizga kiring
+- **Environment** tab'iga o'ting
+- **Add Environment Variable** tugmasini bosing
+- **Key** va **Value** ni yozing
+- **Save Changes** tugmasini bosing
 
 4. **Create Web Service**
 
