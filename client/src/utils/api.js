@@ -1,15 +1,15 @@
 import axios from 'axios';
 
 const isDev = import.meta.env.DEV;
-const fallbackProductionUrl = 'https://infastcrmm.onrender.com/api';
-const baseURL = isDev ? 'http://localhost:5000/api' : import.meta.env.VITE_API_URL || fallbackProductionUrl;
+const rawProductionUrl = import.meta.env.VITE_API_URL || 'https://infastcrmm.onrender.com';
+const normalizedProductionUrl = rawProductionUrl.replace(/\/+$/, '');
+const ensureApiPath = normalizedProductionUrl.endsWith('/api')
+  ? normalizedProductionUrl
+  : `${normalizedProductionUrl}/api`;
+const baseURL = isDev ? 'http://localhost:5000/api' : ensureApiPath;
 
 const api = axios.create({
-<<<<<<< Current (Your changes)
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-=======
   baseURL,
->>>>>>> Incoming (Background Agent changes)
   headers: {
     'Content-Type': 'application/json',
   },
