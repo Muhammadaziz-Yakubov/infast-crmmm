@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-const isDev = import.meta.env.DEV;
-const rawProductionUrl = import.meta.env.VITE_API_URL || 'https://infastcrmm.onrender.com';
-const normalizedProductionUrl = rawProductionUrl.replace(/\/+$/, '');
-const ensureApiPath = normalizedProductionUrl.endsWith('/api')
-  ? normalizedProductionUrl
-  : `${normalizedProductionUrl}/api`;
-const baseURL = isDev ? 'http://localhost:5000/api' : ensureApiPath;
+// Production: VITE_API_URL dan oladi, Development: /api (Vite proxy orqali)
+const baseURL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL,

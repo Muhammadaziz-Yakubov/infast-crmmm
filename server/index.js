@@ -38,7 +38,7 @@ const createDefaultAdmin = async () => {
       await adminUser.save();
       console.log('✅ Default admin user created successfully!');
       console.log(`📧 Email: ${adminEmail}`);
-      console.log('🔐 Password: (configured in code)');
+      console.log('🔐 Password: Azizbek0717');
     } else {
       console.log('ℹ️  Admin user already exists');
     }
@@ -48,39 +48,17 @@ const createDefaultAdmin = async () => {
 };
 
 // Middleware
-const allowedOrigins = [
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-  'https://infast-crm.vercel.app'
-].filter(Boolean);
-
-const corsOptions = {
-  origin: (incomingOrigin, callback) => {
-    if (!incomingOrigin) {
-      // Allow server-to-server or tools like curl/postman without origin header.
-      return callback(null, true);
-    }
-
-    const matchesAllowedDomain =
-      allowedOrigins.includes(incomingOrigin) || incomingOrigin.endsWith('.vercel.app');
-
-    if (matchesAllowedDomain) {
-      return callback(null, true);
-    }
-
-    callback(new Error(`CORS policy blocked request from ${incomingOrigin}`));
-  },
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
   credentials: true
-};
-
-app.use(cors(corsOptions));
+}));
 app.use(express.json());
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://infastaiuz_db_user:Shodiyona@infast-ai.kuaftll.mongodb.net/infastcrm?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/infast-crm')
 .then(async () => {
   console.log('✅ MongoDB connected');
   await createDefaultAdmin();
