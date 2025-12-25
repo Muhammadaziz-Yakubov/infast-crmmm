@@ -20,6 +20,13 @@ const attendanceSchema = new mongoose.Schema({
     enum: ['PRESENT', 'ABSENT', 'LATE'],
     default: 'ABSENT'
   },
+  // Daily grade/score for the lesson
+  score: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: null
+  },
   note: {
     type: String,
     default: ''
@@ -32,4 +39,3 @@ const attendanceSchema = new mongoose.Schema({
 attendanceSchema.index({ student_id: 1, group_id: 1, date: 1 }, { unique: true });
 
 export default mongoose.model('Attendance', attendanceSchema);
-

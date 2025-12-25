@@ -10,8 +10,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Token will be added automatically by interceptor in api.js
-      // Try to decode token to get user info (optional)
+      // Decode token to get user info
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setUser({ 
@@ -20,12 +19,24 @@ export function AuthProvider({ children }) {
           role: payload.role 
         });
       } catch (e) {
-        // If token decode fails, just set a basic user object
-        setUser({ token: true });
+        // If token decode fails, try to get user from API
+        fetchUser();
+        return;
       }
     }
     setLoading(false);
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await api.get('/auth/me');
+      setUser(response.data);
+    } catch (error) {
+      localStorage.removeItem('token');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email, password) => {
     try {
@@ -34,8 +45,7 @@ export function AuthProvider({ children }) {
       
       if (token) {
         localStorage.setItem('token', token);
-        // Token will be added automatically by interceptor
-        setUser(user || { email, id: user?.id });
+        setUser(user);
         return { success: true };
       } else {
         return { 
@@ -46,7 +56,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       return { 
         success: false, 
-        message: error.response?.data?.message || error.message || 'Login failed' 
+        message: error.response?.data?.message || error.message || 'Kirish amalga oshmadi' 
       };
     }
   };
@@ -67,4 +77,3 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-

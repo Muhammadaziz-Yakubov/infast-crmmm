@@ -13,10 +13,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  full_name: {
+    type: String,
+    default: ''
+  },
   role: {
     type: String,
-    enum: ['ADMIN'],
-    default: 'ADMIN'
+    enum: ['ADMIN', 'MANAGER'],
+    default: 'MANAGER'
+  },
+  status: {
+    type: String,
+    enum: ['ACTIVE', 'INACTIVE'],
+    default: 'ACTIVE'
   }
 }, {
   timestamps: true
@@ -33,4 +42,3 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 export default mongoose.model('User', userSchema);
-

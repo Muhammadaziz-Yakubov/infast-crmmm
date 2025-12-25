@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { Plus, Edit, Trash2, X, Play, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Play, Users, Clock, Calendar, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function Groups() {
@@ -12,8 +13,11 @@ export default function Groups() {
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [activatingGroup, setActivatingGroup] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get('status');
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const [formData, setFormData] = useState({
     course_id: '',
@@ -28,6 +32,15 @@ export default function Groups() {
 
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const dayLabels = {
+    Mon: 'Du',
+    Tue: 'Se',
+    Wed: 'Ch',
+    Thu: 'Pa',
+    Fri: 'Ju',
+    Sat: 'Sh',
+    Sun: 'Ya'
+  };
+  const dayLabelsFull = {
     Mon: 'Dushanba',
     Tue: 'Seshanba',
     Wed: 'Chorshanba',
@@ -93,7 +106,6 @@ export default function Groups() {
       setActivatingGroup(null);
       resetForm();
       fetchGroups();
-      alert('Guruh muvaffaqiyatli faollashtirildi!');
     } catch (error) {
       console.error('Error activating group:', error);
       alert(error.response?.data?.message || 'Xatolik yuz berdi');
@@ -122,7 +134,7 @@ export default function Groups() {
       fetchGroups();
     } catch (error) {
       console.error('Error deleting group:', error);
-      alert('Xatolik yuz berdi');
+      alert(error.response?.data?.message || 'Xatolik yuz berdi');
     }
   };
 
@@ -148,12 +160,12 @@ export default function Groups() {
     });
   };
 
-  const getStatusColor = (status) => {
+  const getStatusGradient = (status) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'NABOR': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'CLOSED': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ACTIVE': return 'from-emerald-400 to-green-500';
+      case 'NABOR': return 'from-amber-400 to-orange-500';
+      case 'CLOSED': return 'from-gray-400 to-gray-500';
+      default: return 'from-gray-400 to-gray-500';
     }
   };
 
@@ -166,107 +178,173 @@ export default function Groups() {
     }
   };
 
+  const filteredGroups = groups.filter(group =>
+    group.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
-    return <div className="text-center py-12">Yuklanmoqda...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Guruhlar</h1>
-        <button
-          onClick={() => {
-            setEditingGroup(null);
-            resetForm();
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={20} />
-          Yangi guruh
-        </button>
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">Guruhlar</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            Jami: {groups.length} ta guruh
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="relative flex-1 lg:w-64">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Qidirish..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setEditingGroup(null);
+                resetForm();
+                setShowModal(true);
+              }}
+              className="btn-primary flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold whitespace-nowrap"
+            >
+              <Plus size={20} />
+              Yangi guruh
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nomi</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kurs</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Holati</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Vaqt</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kunlar</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Amallar</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {groups.map((group) => (
-              <tr key={group._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">{group.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {group.course_id?.name || 'Noma\'lum'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(group.status)}`}>
-                    {getStatusLabel(group.status)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {group.time || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {group.days_of_week.map(d => dayLabels[d]).join(', ') || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end gap-2">
-                    {group.status === 'NABOR' && (
-                      <button
-                        onClick={() => {
-                          setActivatingGroup(group);
-                          setFormData({ ...formData, start_date: '' });
-                          setShowActivateModal(true);
-                        }}
-                        className="text-green-600 hover:text-green-900 dark:text-green-400"
-                        title="Faollashtirish"
-                      >
-                        <Play size={18} />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleEdit(group)}
-                      className="text-orange-600 hover:text-orange-900 dark:text-orange-400"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(group._id)}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+      {/* Groups Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredGroups.map((group, index) => (
+          <div 
+            key={group._id} 
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in-up"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <div className={`h-2 bg-gradient-to-r ${getStatusGradient(group.status)}`}></div>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                    {group.name}
+                  </h3>
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                    {group.course_id?.name || 'Noma\'lum'}
+                  </p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${getStatusGradient(group.status)}`}>
+                  {getStatusLabel(group.status)}
+                </span>
+              </div>
+
+              <div className="space-y-3 mb-4">
+                {group.time && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Clock size={16} className="text-indigo-500" />
+                    <span>{group.time}</span>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+                {group.days_of_week.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar size={16} className="text-indigo-500" />
+                    <div className="flex gap-1">
+                      {days.map(day => (
+                        <span
+                          key={day}
+                          className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-medium ${
+                            group.days_of_week.includes(day)
+                              ? 'bg-indigo-500 text-white'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
+                          }`}
+                        >
+                          {dayLabels[day]}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                <Link
+                  to={`/students?group_id=${group._id}`}
+                  className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-500"
+                >
+                  <Users size={16} />
+                  <span>O'quvchilar</span>
+                </Link>
+                <div className="flex items-center gap-1">
+                  {group.status === 'NABOR' && isAdmin && (
+                    <button
+                      onClick={() => {
+                        setActivatingGroup(group);
+                        setFormData({ ...formData, start_date: '' });
+                        setShowActivateModal(true);
+                      }}
+                      className="p-2 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                      title="Faollashtirish"
+                    >
+                      <Play size={18} />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(group)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(group._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {filteredGroups.length === 0 && (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+          <Users className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
+          <p className="text-gray-500 dark:text-gray-400">Guruhlar topilmadi</p>
+        </div>
+      )}
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 animate-fade-in-up max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {editingGroup ? 'Guruhni tahrirlash' : 'Yangi guruh'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X size={24} />
+                <X size={24} className="text-gray-500" />
               </button>
             </div>
 
@@ -279,7 +357,7 @@ export default function Groups() {
                   value={formData.course_id}
                   onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                 >
                   <option value="">Kursni tanlang</option>
                   {courses.map(course => (
@@ -297,20 +375,21 @@ export default function Groups() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                  placeholder="Masalan: Frontend-1"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Dars vaqti (masalan: 14:00-16:00)
+                  Dars vaqti
                 </label>
                 <input
                   type="text"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                   placeholder="14:00-16:00"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                 />
               </div>
 
@@ -318,19 +397,19 @@ export default function Groups() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Dars kunlari
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-7 gap-2">
                   {days.map(day => (
                     <button
                       key={day}
                       type="button"
                       onClick={() => toggleDay(day)}
-                      className={`px-3 py-2 rounded-lg border transition-colors ${
+                      className={`py-3 rounded-xl border-2 transition-all font-medium ${
                         formData.days_of_week.includes(day)
-                          ? 'bg-orange-500 text-white border-orange-500'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent'
+                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-300'
                       }`}
                     >
-                      {dayLabels[day]}
+                      {dayLabelsFull[day].substring(0, 2)}
                     </button>
                   ))}
                 </div>
@@ -346,7 +425,7 @@ export default function Groups() {
                     value={formData.min_students}
                     onChange={(e) => setFormData({ ...formData, min_students: parseInt(e.target.value) })}
                     min="1"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                   />
                 </div>
                 <div>
@@ -358,7 +437,7 @@ export default function Groups() {
                     value={formData.max_students}
                     onChange={(e) => setFormData({ ...formData, max_students: parseInt(e.target.value) })}
                     min="1"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                   />
                 </div>
               </div>
@@ -367,13 +446,13 @@ export default function Groups() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
                   Bekor qilish
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                  className="flex-1 btn-primary px-4 py-3 rounded-xl font-medium"
                 >
                   {editingGroup ? 'Saqlash' : 'Qo\'shish'}
                 </button>
@@ -385,23 +464,25 @@ export default function Groups() {
 
       {/* Activate Modal */}
       {showActivateModal && activatingGroup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fade-in-up max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Guruhni faollashtirish
               </h2>
               <button
                 onClick={() => setShowActivateModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X size={24} />
+                <X size={24} className="text-gray-500" />
               </button>
             </div>
 
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              <strong>{activatingGroup.name}</strong> guruhini faollashtirishni tasdiqlaysizmi?
-            </p>
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl mb-4">
+              <p className="text-indigo-700 dark:text-indigo-300">
+                <strong>{activatingGroup.name}</strong> guruhini faollashtirishni tasdiqlaysizmi?
+              </p>
+            </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -412,7 +493,7 @@ export default function Groups() {
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
               />
             </div>
 
@@ -420,13 +501,13 @@ export default function Groups() {
               <button
                 type="button"
                 onClick={() => setShowActivateModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
               >
                 Bekor qilish
               </button>
               <button
                 onClick={handleActivate}
-                className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-400 to-green-500 text-white rounded-xl font-medium shadow-lg"
               >
                 Faollashtirish
               </button>
@@ -437,4 +518,3 @@ export default function Groups() {
     </div>
   );
 }
-

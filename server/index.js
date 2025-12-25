@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { checkPaymentStatus } from './jobs/paymentJob.js';
 import authRoutes from './routes/auth.js';
+import studentAuthRoutes from './routes/studentAuth.js';
 import courseRoutes from './routes/courses.js';
 import groupRoutes from './routes/groups.js';
 import studentRoutes from './routes/students.js';
@@ -12,6 +13,8 @@ import leadRoutes from './routes/leads.js';
 import paymentRoutes from './routes/payments.js';
 import attendanceRoutes from './routes/attendance.js';
 import dashboardRoutes from './routes/dashboard.js';
+import staffRoutes from './routes/staff.js';
+import taskRoutes from './routes/tasks.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -32,7 +35,9 @@ const createDefaultAdmin = async () => {
       const adminUser = new User({
         email: adminEmail,
         password: adminPassword,
-        role: 'ADMIN'
+        full_name: 'Admin',
+        role: 'ADMIN',
+        status: 'ACTIVE'
       });
 
       await adminUser.save();
@@ -67,6 +72,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/infast-cr
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/student-auth', studentAuthRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/students', studentRoutes);
@@ -74,6 +80,8 @@ app.use('/api/leads', leadRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Daily job to check payment status (runs at 9 AM every day)
 cron.schedule('0 9 * * *', () => {
@@ -84,4 +92,3 @@ cron.schedule('0 9 * * *', () => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
