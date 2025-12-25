@@ -195,3 +195,4 @@ Muammo yuzaga kelsa, issue oching yoki aloqaga chiqing.
 "# infastcrmm" 
 "# infastcrm-frontend" 
 "# infasteducrm" 
+"# infastcrm" 
