@@ -1,0 +1,38 @@
+# Render.com deployment configuration
+services:
+  # Backend API
+  - type: web
+    name: infast-crm-api
+    env: node
+    region: singapore
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false  # MongoDB Atlas connection string
+      - key: JWT_SECRET
+        sync: false  # Kuchli secret key
+      - key: FRONTEND_URL
+        sync: false  # Frontend URL (CORS uchun)
+
+  # Frontend Static Site
+  - type: web
+    name: infast-crm-frontend
+    env: static
+    region: singapore
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

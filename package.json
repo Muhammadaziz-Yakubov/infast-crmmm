@@ -1,0 +1,19 @@
+{
+  "name": "infast-crm",
+  "version": "1.0.0",
+  "description": "InFast IT-Academy uchun CRM dastur Created by Muhammadaziz Yakubov",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["crm", "education", "uzbekistan", "infast", "it-academy", "muhammadaziz yakubov"],
+  "author": "Muhammadaziz Yakubov",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
