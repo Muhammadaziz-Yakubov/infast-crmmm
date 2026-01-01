@@ -8,10 +8,18 @@ const router = express.Router();
 // Get all payments
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { student_id, start_date, end_date } = req.query;
+    const { student_id, start_date, end_date, month, year } = req.query;
     const filter = {};
     if (student_id) filter.student_id = student_id;
-    if (start_date || end_date) {
+    
+    if (month && year) {
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+      filter.payment_date = {
+        $gte: startOfMonth,
+        $lte: endOfMonth
+      };
+    } else if (start_date || end_date) {
       filter.payment_date = {};
       if (start_date) filter.payment_date.$gte = new Date(start_date);
       if (end_date) filter.payment_date.$lte = new Date(end_date);

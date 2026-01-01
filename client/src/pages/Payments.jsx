@@ -12,6 +12,8 @@ export default function Payments() {
   const [showModal, setShowModal] = useState(false);
   const [editingPayment, setEditingPayment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [searchParams] = useSearchParams();
   const studentFilter = searchParams.get('student_id');
   const { user } = useAuth();
@@ -28,7 +30,7 @@ export default function Payments() {
   useEffect(() => {
     fetchStudents();
     fetchPayments();
-  }, [studentFilter]);
+  }, [studentFilter, selectedMonth, selectedYear]);
 
   useEffect(() => {
     if (studentFilter) {
@@ -49,6 +51,10 @@ export default function Payments() {
     try {
       const params = {};
       if (studentFilter) params.student_id = studentFilter;
+      if (selectedMonth && selectedYear) {
+        params.month = selectedMonth;
+        params.year = selectedYear;
+      }
       
       const response = await api.get('/payments', { params });
       setPayments(response.data);
@@ -156,6 +162,36 @@ export default function Payments() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex gap-2">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            >
+              <option value="1">Yanvar</option>
+              <option value="2">Fevral</option>
+              <option value="3">Mart</option>
+              <option value="4">Aprel</option>
+              <option value="5">May</option>
+              <option value="6">Iyun</option>
+              <option value="7">Iyul</option>
+              <option value="8">Avgust</option>
+              <option value="9">Sentabr</option>
+              <option value="10">Oktabr</option>
+              <option value="11">Noyabr</option>
+              <option value="12">Dekabr</option>
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            >
+              {[...Array(5)].map((_, i) => {
+                const year = new Date().getFullYear() - 2 + i;
+                return <option key={year} value={year}>{year}</option>;
+              })}
+            </select>
+          </div>
           <div className="relative flex-1 lg:w-64">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
