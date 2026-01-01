@@ -1,7 +1,4 @@
 ﻿{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -10,7 +7,7 @@
   ],
   "headers": [
     {
-      "source": "/assets/(.*\\.js)",
+      "source": "/assets/(.*)",
       "headers": [
         {
           "key": "Content-Type",
@@ -23,20 +20,11 @@
       ]
     },
     {
-      "source": "/(.*\\.js)",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.mjs)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
+          "value": "text/html; charset=utf-8"
         }
       ]
     }
